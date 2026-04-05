@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Test Checklist</title>
+  <!-- В реальном проекте путь будет полным URL -->
+  <link rel="stylesheet" href="./public/checklist-styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="./public/checklist-init.js" defer></script>
+</head>
+<body style="font-family: sans-serif; padding: 2rem; background: #fafafa;">
+
+  <h1>Мой Сайт</h1>
+  <p>Ниже расположен встроенный чеклист:</p>
+
+  <!-- КОД ЧЕКЛИСТА -->
+  <div class="zvero-checklist" data-checklist-id="checklist_12345">
+    <div class="zvero-checklist-header">
+      <h3 class="zvero-checklist-title">Тестовый чеклист</h3>
+      <p class="zvero-checklist-desc">Описание тестового чеклиста</p>
+    </div>
+    
+    <ul class="zvero-checklist-items">
+      <li class="zvero-checklist-item">
+        <label class="zvero-checklist-label">
+          <input type="checkbox" class="zvero-checklist-checkbox" data-item-id="item_1">
+          <span class="zvero-checklist-text">Пункт номер раз</span>
+        </label>
+      </li>
+      <li class="zvero-checklist-item">
+        <label class="zvero-checklist-label">
+          <input type="checkbox" class="zvero-checklist-checkbox" data-item-id="item_2">
+          <span class="zvero-checklist-text">Пункт номер два</span>
+        </label>
+      </li>
+    </ul>
+    
+    <div class="zvero-checklist-footer">
+      <button class="zvero-checklist-btn-pdf" type="button">Скачать PDF</button>
+    </div>
+  </div>
+
+</body>
+</html>

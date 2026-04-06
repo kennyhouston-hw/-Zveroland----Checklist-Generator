@@ -5,7 +5,7 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/-Zveroland----Checklist-Generator/',
+  base: '/Zveroland_CGenerator/',
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {

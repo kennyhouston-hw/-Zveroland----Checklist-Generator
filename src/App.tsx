@@ -300,7 +300,9 @@ function App() {
   const generateHeadHTML = () => {
     return `<!-- Подключите эти стили и скрипты в тег <head> или перед закрывающим </body> Вашего сайта (один раз на страницу) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kennyhouston-hw/Zveroland_CGenerator/checklist-styles.css">
-<!-- Скрипт инициализации (чекбоксы + скачивание PDF) -->
+<!-- Библиотека для генерации PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<!-- Скрипт инициализации -->
 <script src="https://cdn.jsdelivr.net/gh/kennyhouston-hw/Zveroland_CGenerator/checklist-init.js" defer></script>`;
   };
 

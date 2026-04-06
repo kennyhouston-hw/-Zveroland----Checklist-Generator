@@ -52,6 +52,10 @@
   padding: 1.25rem 1rem 0 1rem;
 }
 
+.zvero-checklist-block:last-child {
+  margin-bottom: 1rem;
+}
+
 .zvero-checklist-block-title {
   font-size: 1.125rem;
   font-weight: 500;

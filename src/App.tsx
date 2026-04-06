@@ -9,7 +9,6 @@ import {
   Minus,
   GripVertical,
   Download,
-  Upload,
   FileBracesCorner,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -58,8 +57,8 @@ function IframePreview({ html }: { html: string }) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="/checklist-styles.css">
-  <style>body { margin: 0; padding: 1.5rem; background: transparent; }</style>
+  <link rel="stylesheet" href="checklist-styles.css">
+  <style>body { margin: 0; padding: 1.25rem; display:flex; justify-content:center; background: transparent; }</style>
 </head>
 <body>${html}</body>
 </html>`);

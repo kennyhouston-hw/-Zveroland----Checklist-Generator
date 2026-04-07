@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import logo from "./assets/logo.svg";
 
 import {
   Plus,
@@ -300,7 +301,7 @@ function App() {
   };
 
   const generateHeadHTML = () => {
-    return `<!-- Подключите эти стили и скрипты в тег <head> или перед закрывающим </body> Вашего сайта (один раз на страницу) -->
+    return `<!-- Подключите эти стили и скрипты в тег <head> или перед закрывающим </body> вашего сайта (один раз на страницу) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kennyhouston-hw/Zveroland_CGenerator/checklist-styles.css">
 <!-- Скрипт инициализации -->
 <script src="https://cdn.jsdelivr.net/gh/kennyhouston-hw/Zveroland_CGenerator/checklist-init.js" defer></script>`;
@@ -465,7 +466,7 @@ ${itemsHtml}
     <div className="min-h-screen max-w-4xl flex flex-col p-4 md:p-8 font-sans mx-auto">
       <Toaster position="top-center" />
       <header className="mb-6">
-        <img src="./src/assets/logo.svg" alt="Logo" className="w-28" />
+        <img src={logo} alt="Logo" className="w-28" />
       </header>
 
       <main className="flex flex-col gap-8 max-w-full mx-auto w-full">

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+
 import {
   Plus,
   Trash2,
@@ -10,6 +11,7 @@ import {
   GripVertical,
   Download,
   FileBracesCorner,
+  FileDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -58,7 +60,7 @@ function IframePreview({ html }: { html: string }) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="checklist-styles.css">
-  <style>body { margin: 0; padding: 1.25rem; display:flex; justify-content:center; background: transparent; }</style>
+  <style>body { margin: 0; padding: 0; display:flex; justify-content:center; background: transparent; }</style>
 </head>
 <body>${html}</body>
 </html>`);
@@ -69,7 +71,7 @@ function IframePreview({ html }: { html: string }) {
     <iframe
       ref={iframeRef}
       className="w-full border-0 rounded-xl"
-      style={{ minHeight: "400px", height: "auto" }}
+      style={{ height: "auto" }}
       title="Checklist Preview"
       scrolling="no"
       onLoad={(e) => {
@@ -90,12 +92,12 @@ function App() {
     blocks: [
       {
         id: "block_1",
-        title: "Основной этап",
+        title: "Новый блок",
         description: "",
         items: [
-          { id: "item_1", text: "Первый пункт плана" },
-          { id: "item_2", text: "Проверить все настройки" },
-          { id: "item_3", text: "Скачать результат в PDF" },
+          { id: "item_1", text: "Первый пункт" },
+          { id: "item_2", text: "Второй пункт" },
+          { id: "item_3", text: "Третий пункт" },
         ],
       },
     ],
@@ -300,8 +302,6 @@ function App() {
   const generateHeadHTML = () => {
     return `<!-- Подключите эти стили и скрипты в тег <head> или перед закрывающим </body> Вашего сайта (один раз на страницу) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kennyhouston-hw/Zveroland_CGenerator/checklist-styles.css">
-<!-- Библиотека для генерации PDF -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <!-- Скрипт инициализации -->
 <script src="https://cdn.jsdelivr.net/gh/kennyhouston-hw/Zveroland_CGenerator/checklist-init.js" defer></script>`;
   };
@@ -354,12 +354,6 @@ ${itemsHtml}
 <div class="zvero-checklist" data-checklist-id="${escapeHtml(data.id)}">
     ${data.imageUrl ? `<img src="${escapeHtml(data.imageUrl)}" alt="Обложка чеклиста" class="zvero-checklist-cover" />` : ""}
   ${blocksHtml}
-  <div class="zvero-checklist-footer">
-    <button class="zvero-checklist-btn-pdf" type="button">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-      Скачать PDF
-    </button>
-  </div>
 </div>`;
   };
 
@@ -375,29 +369,128 @@ ${itemsHtml}
       });
   };
 
+  const downloadPDF = () => {
+    // 1. Get current checked states from the iframe preview
+    const iframe = document.querySelector(
+      "iframe[title='Checklist Preview']",
+    ) as HTMLIFrameElement | null;
+    const checkedIds = new Set<string>();
+    if (iframe?.contentDocument) {
+      iframe.contentDocument
+        .querySelectorAll(".zvero-checklist-checkbox:checked")
+        .forEach((cb) => {
+          const id = cb.getAttribute("data-item-id");
+          if (id) checkedIds.add(id);
+        });
+    }
+
+    // 2. Build the body HTML and manually inject 'checked' attributes
+    let bodyHtml = generateBodyHTML();
+
+    // Simple regex to find checkboxes and add 'checked' if their ID is in our set
+    bodyHtml = bodyHtml.replace(
+      /<input type="checkbox" class="zvero-checklist-checkbox" data-item-id="([^"]+)">/g,
+      (match, id) => {
+        return checkedIds.has(id) ? match.replace(">", " checked>") : match;
+      },
+    );
+
+    // Remove the PDF footer button
+    bodyHtml = bodyHtml.replace(
+      /<div class="zvero-checklist-footer">[\s\S]*?<\/div>/,
+      "",
+    );
+
+    // 3. Fetch CSS and print
+    fetch("/Zveroland_CGenerator/checklist-styles.css")
+      .catch(() => fetch("/checklist-styles.css"))
+      .then((r) => r.text())
+      .catch(() => "")
+      .then((cssText) => {
+        cssText = cssText.replace(/@import[^;]+;/g, "");
+        cssText = cssText.replace(/oklch\([^)]+\)/g, "#3dbd73");
+
+        const printWindow = window.open("", "_blank", "width=900,height=700");
+        if (!printWindow) {
+          toast.error("Разрешите всплывающие окна для скачивания PDF");
+          return;
+        }
+
+        printWindow.document.write(`<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Чеклист</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #fff;
+      font-family: system-ui, -apple-system, sans-serif;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    @media print {
+      @page { 
+        margin: 0; 
+      }
+      body { 
+        padding: 5mm; 
+      }
+    }
+    ${cssText}
+  </style>
+</head>
+<body>
+  ${bodyHtml}
+  <script>
+    window.onload = function() {
+      // Set document title to something clean or empty to help some browsers
+      document.title = "Checklist";
+      setTimeout(function() {
+        window.print();
+        window.close();
+      }, 300);
+    };
+  <\/script>
+</body>
+</html>`);
+        printWindow.document.close();
+        toast.success("Откроется диалог печати — выберите «Сохранить как PDF»");
+      });
+  };
+
   return (
     <div className="min-h-screen max-w-4xl flex flex-col p-4 md:p-8 font-sans mx-auto">
       <Toaster position="top-center" />
-      <header className="mb-8">
-        <h1 className="text-3xl font-meduim text-slate-900 mt-0 flex items-center gap-2">
-          Генератор Чеклистов
-        </h1>
+      <header className="mb-6">
+        <img src="./src/assets/logo.svg" alt="Logo" className="w-28" />
       </header>
 
       <main className="flex flex-col gap-8 max-w-full mx-auto w-full">
         {/* Left Column: Editor & Output Tabs */}
         <div className="flex flex-col gap-6">
           <Tabs defaultValue="editor" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-4">
-              <TabsTrigger value="editor" className="flex gap-2">
+            <TabsList className="grid w-full grid-cols-3 mb-4 rounded-full bg-gray-50">
+              <TabsTrigger
+                value="editor"
+                className="flex gap-2 py-1 rounded-full"
+              >
                 <LayoutTemplate className="w-4 h-4" />
                 Конструктор
               </TabsTrigger>
-              <TabsTrigger value="preview" className="flex gap-2">
+              <TabsTrigger
+                value="preview"
+                className="flex gap-2 py-1 rounded-full"
+              >
                 <Eye className="w-4 h-4" />
                 Превью
               </TabsTrigger>
-              <TabsTrigger value="code" className="flex gap-2">
+              <TabsTrigger
+                value="code"
+                className="flex gap-2 py-1 rounded-full"
+              >
                 <FileCode2 className="w-4 h-4" />
                 Экпорт
               </TabsTrigger>
@@ -420,6 +513,7 @@ ${itemsHtml}
                     <Button
                       variant="outline"
                       size="sm"
+                      className="text-sky-600 bg-sky-100/50 border-sky-200 hover:bg-sky-100 hover:border-sky-200 hover:text-sky-600"
                       onClick={() => fileInputRef.current?.click()}
                     >
                       <FileBracesCorner className="w-4 h-4" />
@@ -564,7 +658,7 @@ ${itemsHtml}
                       onClick={addBlock}
                       variant="default"
                       size="default"
-                      className="flex gap-2"
+                      className="border-dashed flex text-sky-600 bg-sky-100/50 border-sky-200 hover:bg-sky-100 hover:border-sky-200 hover:text-sky-600"
                     >
                       <Plus className="w-4 h-4" />
                       Новый блок
@@ -634,7 +728,24 @@ ${itemsHtml}
             </TabsContent>
 
             <TabsContent value="preview" className="mt-0 outline-none">
-              <Card className="overflow-hidden border-none bg-neutral-100 flex items-center justify-center min-h-[400px]">
+              <Card className="overflow-hidden flex items-center justify-center gap-0 space-y-0">
+                <CardHeader className="border-b py-4 flex flex-row gap-4 flex-wrap w-full">
+                  <div className="flex flex-col gap-1 grow">
+                    <CardTitle>Превью</CardTitle>
+                    <CardDescription className="text-sm">
+                      Посмотрите, как будет выглядеть чеклист на вашем сайте.
+                    </CardDescription>
+                  </div>
+                  <Button
+                    onClick={downloadPDF}
+                    variant="default"
+                    size="sm"
+                    className="flex text-sky-600 bg-sky-100/50 border-sky-200 hover:bg-sky-100 hover:border-sky-200 hover:text-sky-600"
+                  >
+                    <FileDown className="w-4 h-4" />
+                    Скачать PDF
+                  </Button>
+                </CardHeader>
                 <div className="w-full">
                   <IframePreview html={generateBodyHTML()} />
                 </div>
